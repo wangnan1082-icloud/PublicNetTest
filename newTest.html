@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>New Test Document Load Instrumentation Example</title>
+  <base href="/" />
+  <!--
+      https://www.w3.org/TR/trace-context/
+      Set the `traceparent` in the server's HTML template code. It should be
+      dynamically generated server side to have the server's request trace Id,
+      a parent span Id that was set on the server's request span, and the trace
+      flags to indicate the server's sampling decision
+      (01 = sampled, 00 = not sampled).
+      '{version}-{traceId}-{spanId}-{sampleDecision}'
+    -->
+  <meta name="traceparent" content="00-ab42124a3c573678d4d8b21ba52df3bf-d21f7bc17caa5aba-01" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+</head>
+<h3>H3 New Test Document Load Instrumentation Example</h3>
+
+<body>
+
+  New Test Document Load Instrumentation Example
+
+  <a href="index.html" target="_blank" rel="noopener noreferrer">返回</a>
+
+  <script type="module" src="document-load.js"></script>
+
+  <script>
+    function codeError() {
+      let a = {}
+      a.split('/')
+    }
+
+    function onClickXhrNormal() {
+      console.log('12312')
+      const xhr = new XMLHttpRequest()
+      xhr.open('get', '/normal')
+      xhr.setRequestHeader('content-type', 'application/json')
+      xhr.send()
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          console.log(xhr.responseType);
+          console.log("onClickXhrNormal");
+        }
+      }
+    }
+    function onClickXhrError() {
+      const xhr = new XMLHttpRequest()
+      xhr.open('get', '/exception')
+      xhr.setRequestHeader('content-type', 'application/json')
+      xhr.send()
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          // console.log(xhr.responseText)
+          console.log("onClickXhrError");
+        }
+      }
+    }
+    function onClickNativeFetch() {
+      fetch('/normal/post', {
+        method: 'POST',
+        body: JSON.stringify({ test: '测试请求体' }),
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }).then((res) => {
+        res.text().then((res) => console.log('res', res))
+      })
+    }
+    function onClickNativeErrorFetch() {
+      fetch('/exception/post', {
+        method: 'POST',
+        body: JSON.stringify({ test: '测试请求体' }),
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }).then(
+        (res) => {
+          res.text().then((res) => console.log('res', res))
+        },
+        (err) => {
+          console.log('err', err)
+        }
+      )
+    }
+
+    function mitoLog() {
+      window._MITO_.log({ message: { one: 111 }, tag: '测试' })
+    }
+
+    function promiseError() {
+      const promiseWrap = () =>
+        new Promise((resolve, reject) => {
+          reject('promise reject')
+        })
+      promiseWrap().then((res) => {
+        console.log('res', res)
+      })
+    }
+  </script>
+
+</body>
+
+
+</html>
